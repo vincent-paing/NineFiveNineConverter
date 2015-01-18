@@ -9,16 +9,35 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="START CONVERTING"
-        android:id="@+id/start"
+        android:text="CONVERT TO 959"
+        android:id="@+id/convertNine"
+        android:layout_above="@+id/addNine"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ADD +959"
+        android:id="@+id/addNine"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ADD 09"
+        android:id="@+id/addZeroNine"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/addNine" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="MADE BY VINCENT"
+        android:text="Made by Aung Kyaw Paing"
+        android:textColor="@color/cyan"
+        android:id="@+id/text"
+        android:clickable="true"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 

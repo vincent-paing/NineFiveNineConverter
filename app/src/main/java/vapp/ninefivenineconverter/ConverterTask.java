@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.*;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -21,12 +22,12 @@ public class ConverterTask extends AsyncTask {
 
     private Context context;
     private String[] rawContactsNumber;
+    private int actionCode;
+    private ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
     public ConverterTask(Context context) {
         this.context = context;
     }
-    private ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-
 
     @Override
     protected void onPreExecute() {
@@ -91,30 +92,78 @@ public class ConverterTask extends AsyncTask {
             while (!phone.isAfterLast()) {
                 final String number = phone.getString(contactNumberColumnIndex);
                 final int phoneType = phone.getInt(contactTypeColumnIndex);
-//                EditNumber(number, contactId);
-                String newNumber = null;
-                if (number.substring(0, 2).equals("09")) {
-                    String temp = number.substring(2);
-                    newNumber = "+959".concat(temp);
-                } else {
-                    newNumber = number;
-                }
                 String selectPhone = Data.CONTACT_ID + "=? AND " + Data.MIMETYPE + "='"  +
                         Phone.CONTENT_ITEM_TYPE + "'" + " AND " + Phone.TYPE + "=?";
                 String[] phoneArgs = new String[]{String.valueOf(contactId), String.valueOf(phoneType)};
-                ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
-                        .withSelection(selectPhone, phoneArgs)
-                        .withValue(Phone.NUMBER, newNumber)
-                        .build());
-                phone.moveToNext();
+                String newNumber = null;
+                switch (actionCode) {
+                    case (0) :
+                        newNumber = buildNineFineNine(number);
+                        ops.add(ContentProviderOperation.newUpdate(Data.CONTENT_URI)
+                                .withSelection(selectPhone, phoneArgs)
+                                .withValue(Phone.NUMBER, newNumber)
+                                .build());
+                        phone.moveToNext();
+                        break;
+                    case (1):
+                        newNumber = buildNineFineNine(number);
+                        ops.add(ContentProviderOperation.newInsert(Data.CONTENT_URI)
+                                .withValue(Data.RAW_CONTACT_ID, contactId)
+                                .withValue(Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
+                                .withValue(Phone.NUMBER, newNumber)
+                                .withValue(Phone.TYPE, Phone.TYPE_CUSTOM)
+                                .withValue(Phone.LABEL, "NineFiveNine")
+                                .build());
+                        phone.moveToNext();
+                        break;
+                    case (2) :
+                        newNumber = buildZeroNine(number);
+                        ops.add(ContentProviderOperation.newInsert(Data.CONTENT_URI)
+                                .withValue(Data.RAW_CONTACT_ID, contactId)
+                                .withValue(Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
+                                .withValue(Phone.NUMBER, newNumber)
+                                .withValue(Phone.TYPE, Phone.TYPE_CUSTOM)
+                                .withValue(Phone.LABEL, "ZeroNine")
+                                .build());
+                        phone.moveToNext();
+                        break;
+                }
+
             }
         }
         phone.close();
     }
 
+    private String buildZeroNine(String number) {
+        if (number.substring(0, 4).equals("+959")) {
+            String temp = number.substring(4);
+            return "09".concat(temp);
+        } else {
+            return number;
+        }
+    }
+
+
     @Override
     protected void onPostExecute(Object o) {
         super.onPostExecute(o);
         Toast.makeText(context, "Finish Converting", Toast.LENGTH_LONG).show();
+    }
+
+    public int getActionCode() {
+        return actionCode;
+    }
+
+    public void setActionCode(int actionCode) {
+        this.actionCode = actionCode;
+    }
+
+    public String buildNineFineNine(String number) {
+        if (number.substring(0, 2).equals("09")) {
+            String temp = number.substring(2);
+            return "+959".concat(temp);
+        } else {
+            return number;
+        }
     }
 }
